@@ -20,9 +20,9 @@ client.on('ready', () => {
 });
 
 // AliExpressのURLパターンを定義
-const aliExpressPatterns = [
+export const aliExpressPatterns = [
   /https:\/\/ja\.aliexpress\.com\/item\/\d+\.html/g,  // 日本語商品ページ
-  /https:\/\/a\.aliexpress\.com\/_\w+/g,              // 短縮URL
+  /https:\/\/a\.aliexpress\.com\/_\w+(?![\/\w])/g,    // 短縮URL（URLの終端を確認）
   /https:\/\/ja\.aliexpress\.com\/i\/\d+\.html/g      // i/形式のURL
 ];
 
