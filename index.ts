@@ -26,32 +26,34 @@ client.on('messageCreate', async (message) => {
   }
   console.log('User message detected, processing...', message.content);
 
-  const aliExpressUrlRegex = /https:\/\/ja\.aliexpress\.com\/item\/\d+\.html|https:\/\/a\.aliexpress\.com\/_\w+/;
-  const match = message.content.match(aliExpressUrlRegex);
+    const aliExpressUrlRegex = new RegExp('https:\/\/ja\.aliexpress\.com\/item\/\d+\.html|https:\/\/a\.aliexpress\.com\/_\w+', 'g');
+  const matches = message.content.match(aliExpressUrlRegex);
 
-  if (match) {
-    const url = match[0];
-    console.log('Processing URL:', url);
-    try {
-      const response = await axios.get(url);
-      const html = response.data;
-      const $ = cheerio.load(html);
-      console.log('HTML loaded successfully');
+  if (matches) {
+    const urlsToProcess = matches.slice(0, 5);
+    for (const url of urlsToProcess) {
+      console.log('Processing URL:', url);
+      try {
+        const response = await axios.get(url);
+        const html = response.data;
+        const $ = cheerio.load(html);
+        console.log('HTML loaded successfully for:', url);
 
-      const title = $('meta[property="og:title"]').attr('content');
-      console.log('Title found:', title);
+        const title = $('meta[property="og:title"]').attr('content');
+        console.log('Title found:', title);
 
-      const imageUrl = $('meta[property="og:image"]').attr('content');
-      console.log('Image URL found:', imageUrl);
+        const imageUrl = $('meta[property="og:image"]').attr('content');
+        console.log('Image URL found:', imageUrl);
 
-      if (title && imageUrl) {
-        message.reply({
-          content: `**${title}**`,
-          files: [imageUrl],
-        });
+        if (title && imageUrl) {
+          message.channel.send({
+            content: `**${title}**`,
+            files: [imageUrl],
+          });
+        }
+      } catch (error) {
+        console.error(`Error fetching OGP for ${url}:`, error);
       }
-    } catch (error) {
-      console.error('Error fetching OGP:', error);
     }
   }
 });
