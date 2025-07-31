@@ -19,6 +19,13 @@ client.on('ready', () => {
   console.log(`Logged in as ${client.user?.tag}!`);
 });
 
+// AliExpressのURLパターンを定義
+const aliExpressPatterns = [
+  /https:\/\/ja\.aliexpress\.com\/item\/\d+\.html/g,  // 日本語商品ページ
+  /https:\/\/a\.aliexpress\.com\/_\w+/g,              // 短縮URL
+  /https:\/\/ja\.aliexpress\.com\/i\/\d+\.html/g      // i/形式のURL
+];
+
 client.on('messageCreate', async (message) => {
   if (message.author.bot) {
     console.log('Bot message detected, skipping...');
@@ -26,10 +33,16 @@ client.on('messageCreate', async (message) => {
   }
   console.log('User message detected, processing...', message.content);
 
-    const aliExpressUrlRegex = new RegExp('https:\/\/ja\.aliexpress\.com\/item\/\d+\.html|https:\/\/a\.aliexpress\.com\/_\w+', 'g');
-  const matches = message.content.match(aliExpressUrlRegex);
+  // すべてのパターンをチェックしてマッチするURLを取得
+  let matches: string[] = [];
+  for (const pattern of aliExpressPatterns) {
+    const patternMatches = message.content.match(pattern);
+    if (patternMatches) {
+      matches = matches.concat(patternMatches);
+    }
+  }
 
-  if (matches) {
+  if (matches.length > 0) {
     const urlsToProcess = matches.slice(0, 5);
     for (const url of urlsToProcess) {
       console.log('Processing URL:', url);
